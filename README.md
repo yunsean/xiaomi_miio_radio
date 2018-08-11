@@ -66,5 +66,6 @@ radio.play_url
         data_template:
           entity_id: radio.childrenroom_fm
           volume: 75
-          
+    
+理论上同时支持空调伴侣和小米网关（空调伴侣二代，圆坨坨那货，测试通过！）          
 Enjoy it!          

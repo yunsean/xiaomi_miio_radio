@@ -1,0 +1,47 @@
+# Describes the format for available radio services
+
+turn_on:
+  description: Sends the Power On Command.
+  fields:
+    entity_id:
+      description: Name(s) of entities to turn on.
+      example: 'radio.family_room'
+    activity:
+      description: Activity ID or Activity Name to start.
+      example: 'BedroomTV'
+
+toggle:
+  description: Toggles a device.
+  fields:
+    entity_id:
+      description: Name(s) of entities to toggle.
+      example: 'radio.family_room'
+
+turn_off:
+  description: Sends the Power Off Command.
+  fields:
+    entity_id:
+      description: Name(s) of entities to turn off.
+      example: 'radio.family_room'
+
+play_url:
+  description: Sends a single command to a single device.
+  fields:
+    entity_id:
+      description: Name(s) of entities to send command from.
+      example: 'radio.family_room'
+    url:
+      description: A single command or a list of commands to send.
+      example: 'http://'
+      
+set_volume:
+  description: Set FM Volume.
+  fields:
+    entity_id:
+      description: Name(s) of entities to turn off.
+      example: 'radio.family_room'
+    volume:
+      description: A single command or a list of commands to send.
+      example: '40'
+          
+
