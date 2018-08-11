@@ -34,6 +34,12 @@ radio.set_volume
     "entity_id": "radio.childrenroom_fm",
     "volume": 100
   }
+radio.play_next
+  播放下一个收藏频道【当前只能在频道编号最低的10个频道中循环】
+  entity_id用途与上述两个方式一致
+radio.play_prev 
+  播放上一个收藏频道【当前只能在频道编号最低的10个频道中循环】
+  entity_id用途与上述两个方式一致   
 radio.play_url
   播放指定频道
   entity_id用途与上述两个方式一致
@@ -52,7 +58,10 @@ radio.play_url
       "type": 0,
       "url": "http://live.xmcdn.com/live/751/64.m3u8"
     },
-  其中id即为频道ID，一般是按照“我的收藏”顺序显示的，如若不对，则一个一个的试一下吧。
+  其中id即为频道ID，可以通过属性查看到当前正在播放的频道ID【channel】。
+  space_free: 11190211
+  channel: 1065
+  volume: 100
   
 配置script：
   参考：

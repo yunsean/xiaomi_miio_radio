@@ -40,6 +40,8 @@ MIN_TIME_BETWEEN_SCANS = timedelta(seconds=10)
 
 SERVICE_PLAY_URL = 'play_url'
 SERVICE_SET_VOLUME = 'set_volume'
+SERVICE_PLAY_NEXT = 'play_next'
+SERVICE_PLAY_PREV = 'play_prev'
 SERVICE_SYNC = 'sync'
 
 DEFAULT_NUM_REPEATS = 1
@@ -102,6 +104,27 @@ def toggle(hass, activity=None, entity_id=None):
 
 
 @bind_hass
+def play_next(hass, activity=None, entity_id=None):
+    """Turn all or specified radio off."""
+    data = {}
+    if activity:
+        data[ATTR_ACTIVITY] = activity
+    if entity_id:
+        data[ATTR_ENTITY_ID] = entity_id
+    hass.services.call(DOMAIN, SERVICE_PLAY_NEXT, data)
+    
+
+@bind_hass
+def play_prev(hass, activity=None, entity_id=None):
+    """Turn all or specified radio off."""
+    data = {}
+    if activity:
+        data[ATTR_ACTIVITY] = activity
+    if entity_id:
+        data[ATTR_ENTITY_ID] = entity_id
+    hass.services.call(DOMAIN, SERVICE_PLAY_PREV, data)
+
+@bind_hass
 def play_url(hass, url, entity_id=None):
     """Play a url to a device."""
     data = {ATTR_URL: url}
@@ -116,7 +139,6 @@ def set_volume(hass, volume, entity_id=None):
     if entity_id:
         data[ATTR_ENTITY_ID] = entity_id
     hass.services.call(DOMAIN, SERVICE_SEND_COMMAND, data)
-
 
 @asyncio.coroutine
 def async_setup(hass, config):
@@ -137,6 +159,10 @@ def async_setup(hass, config):
                 yield from radio.async_turn_on(**kwargs)
             elif service.service == SERVICE_TOGGLE:
                 yield from radio.async_toggle(**kwargs)
+            elif service.service == SERVICE_PLAY_NEXT:
+                yield from radio.async_play_next(**kwargs)
+            elif service.service == SERVICE_PLAY_PREV:
+                yield from radio.async_play_prev(**kwargs)
             elif service.service == SERVICE_PLAY_URL:
                 yield from radio.async_play_url(**kwargs)
             elif service.service == SERVICE_SET_VOLUME:
@@ -155,6 +181,12 @@ def async_setup(hass, config):
     hass.services.async_register(
         DOMAIN, SERVICE_TURN_ON, async_handle_radio_service,
         schema=RADIO_SERVICE_ACTIVITY_SCHEMA)
+    hass.services.async_register(
+        DOMAIN, SERVICE_PLAY_NEXT, async_handle_radio_service,
+        schema=RADIO_SERVICE_SCHEMA)
+    hass.services.async_register(
+        DOMAIN, SERVICE_PLAY_PREV, async_handle_radio_service,
+        schema=RADIO_SERVICE_SCHEMA)
     hass.services.async_register(
         DOMAIN, SERVICE_TOGGLE, async_handle_radio_service,
         schema=RADIO_SERVICE_ACTIVITY_SCHEMA)
@@ -190,3 +222,23 @@ class RadioDevice(ToggleEntity):
         """
         return self.hass.async_add_job(ft.partial(
             self.set_volume, volume, **kwargs))
+            
+    def play_next(self, **kwargs):
+        """Play next on a device."""
+        raise NotImplementedError()
+    def async_play_next(self, **kwargs):
+        """Play next on a device.
+        This method must be run in the event loop and returns a coroutine.
+        """
+        return self.hass.async_add_job(ft.partial(
+            self.play_next, **kwargs))
+            
+    def play_prev(self, **kwargs):
+        """Play prev on a device."""
+        raise NotImplementedError()
+    def async_play_prev(self, **kwargs):
+        """Play prev on a device.
+        This method must be run in the event loop and returns a coroutine.
+        """
+        return self.hass.async_add_job(ft.partial(
+            self.play_prev, **kwargs))

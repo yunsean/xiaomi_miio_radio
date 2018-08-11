@@ -112,10 +112,13 @@ class XiaomiMiioRadio(RadioDevice):
     @property
     def device_state_attributes(self):
         """Hide radio by default."""
+        status = self._device.send("get_prop_fm", [])
         attrs = {
             'hidden': 'true',
             'channels': self._device.send("get_channels", {"start": 0}),
-            'space_free': self._device.send("get_music_free_space", [])
+            'space_free': self._device.send("get_music_free_space", []),
+            'channel': status["current_program"],
+            'volume': status["current_volume"]
         }
         return attrs
         
@@ -138,7 +141,7 @@ class XiaomiMiioRadio(RadioDevice):
         """Turn the device off."""
         self._device.send('play_fm', ["off"])
 
-    def _play_url(self, payload):
+    def play_url(self, payload, **kwargs):
         """Play specified url on device."""
         if payload is None:
             _LOGGER.debug("Empty packet.")
@@ -151,18 +154,62 @@ class XiaomiMiioRadio(RadioDevice):
             return False
         return True
 
-    def play_url(self, url, **kwargs):
-        """Wrapper for _play_url."""
-#        _LOGGER.error(self._device.send("get_prop_fm", []))
-#        _LOGGER.error(self._device.send("get_channels", {"start": 0}))
-#        _LOGGER.error(self._device.send("get_lumi_dpf_aes_key", []))
-#        _LOGGER.error(self._device.send("get_zigbee_channel", []))
-#        _LOGGER.error(self._device.send("miIO.info", []))
-#        _LOGGER.error(self._device.send("get_prop_fm", []))
-        self._play_url(url)
+    def play_next(self, **kwargs):
+        """Play specified url on device."""
+        try:
+            status = self._device.send("get_prop_fm", [])
+            channel = status["current_program"]
+            channels = self._device.send("get_channels", {"start": 0})
+            chs = channels["chs"]
+            if len(chs) < 1:
+                return False
+            current_index = -1
+            for idx, val in enumerate(chs):
+                if val["id"] == channel:
+                    current_index = idx
+                    break
+            if current_index == -1:
+                current_index = 0
+            elif current_index >= len(chs) - 1:
+                current_index = 0
+            else:
+                current_index = current_index + 1
+            channel = chs[current_index]
+            self._device.send("play_specify_fm", {'id': channel["id"], 'type': 0})
+        except ValueError as error:
+            _LOGGER.error(error)
+            return False
+        return True
+
+    def play_prev(self, **kwargs):
+        """Play specified url on device."""
+        try:
+            status = self._device.send("get_prop_fm", [])
+            channel = status["current_program"]
+            channels = self._device.send("get_channels", {"start": 0})
+            chs = channels["chs"]
+            if len(chs) < 1:
+                return False
+            current_index = -1
+            for idx, val in enumerate(chs):
+                if val["id"] == channel:
+                    current_index = idx
+                    break
+            if current_index == -1:
+                current_index = 0
+            elif current_index == 0:
+                current_index = len(chs) - 1
+            else:
+                current_index = current_index - 1
+            channel = chs[current_index]
+            self._device.send("play_specify_fm", {'id': channel["id"], 'type': 0})
+        except ValueError as error:
+            _LOGGER.error(error)
+            return False
+        return True
             
-    def _set_volume(self, payload):
-        """Set volume to device."""
+    def set_volume(self, payload, **kwargs):
+        """Wrapper for _set_volume."""
         if payload is None:
             _LOGGER.debug("Empty packet.")
             return True
@@ -172,9 +219,5 @@ class XiaomiMiioRadio(RadioDevice):
         except ValueError as error:
             _LOGGER.error(error)
             return False
-        return True
-            
-    def set_volume(self, volume, **kwargs):
-        """Wrapper for _set_volume."""
-        self._set_volume(volume)            
+        return True    
             
